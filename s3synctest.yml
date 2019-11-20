@@ -1,0 +1,13 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: S3 bucket with default encryption
+Resources:
+  NWTestBucket1:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: 'nw-testsync1'
+    DeletionPolicy: Delete
+  NWTestBucket2:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: 'nw-testsync2'
+    DeletionPolicy: Delete
