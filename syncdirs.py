@@ -7,8 +7,9 @@ import logging
 
 
 parser = argparse.ArgumentParser(description='S3 Copier')
-parser.add_argument("--srcbucket", help="Poll Time in Secondsr",default="nw-testsync1", type=str)
-parser.add_argument("--dstbucket", help="Poll Time in Secondsr",default="nw-testsync2", type=str)
+parser.add_argument("--srcbucket", help="Source Destination Bucket",default="nw-testsync1", type=str)
+parser.add_argument("--dstbucket", help="Destination S3 Bucket",default="nw-testsync2", type=str)
+parser.add_argument("--dstdir", help="Destination Directory",default="client", type=str)
 parser.add_argument("--nowork", help="Poll Time in Secondsr",default="true", type=str)
 args = parser.parse_args()
 
@@ -18,6 +19,7 @@ logging.basicConfig(format='%(asctime)s- %(levelname)s - %(message)s', level=log
 
 src_bucket_name = args.srcbucket
 dst_bucket_name = args.dstbucket
+dst_directory = args.dstdir
 dirs = []
 root_excludes = ["*.js","*.html","*assets*","*.txt","*.png","*.woff","*.woff2","*.eot","*.ttf","*.css","*.svg"]
 exclude_dirs = ["*genapp*","assets/","dev/"]
@@ -48,7 +50,7 @@ for dir in dirs:
             include_line = include_line + " " + "--include \"%s%s\"" % (dir,include)
 
 
-sync_cmd = ("aws s3 sync s3://%s s3://%s %s %s --exact-timestamps --acl public-read-write" % (src_bucket_name,dst_bucket_name,exclude_line,include_line))
+sync_cmd = ("aws s3 sync s3://%s s3://%s/%s %s %s --exact-timestamps --acl public-read-write" % (src_bucket_name,dst_bucket_name,dst_directory,exclude_line,include_line))
 logging.info ("Running AWS Sync Command: %s" % sync_cmd)
 if args.nowork == "true":
     logging.info("Not doing any work, if you want to do work set --nowork to false")
