@@ -11,12 +11,14 @@ parser.add_argument("--srcbucket", help="Source Destination Bucket",default="nw-
 parser.add_argument("--dstbucket", help="Destination S3 Bucket",default="nw-testsync2", type=str)
 parser.add_argument("--dstdir", help="Destination Directory",default="client", type=str)
 parser.add_argument("--nowork", help="By default, just show command and do not do work",default="true", type=str)
+parser.add_argument("--acl", help="ACL to use",default="bucket-owner-full-control", type=str)
+
 # parser.add_argument("--dstregion", help="Destination Region",default="us-west-1", type=str)
 # parser.add_argument("--dstregion", help="Destination Region",default="us-west-1", type=str)
 args = parser.parse_args()
 
 # extra_args = "--acl public-read-write --exact-timestamps --endpoint-url http://s3-accelerate.amazonaws.com"
-extra_args = "--acl public-read-write --exact-timestamps"
+extra_args = "--acl  %s --exact-timestamps" % args.acl
 # Setting logging facility
 logging.basicConfig(format='%(asctime)s- %(levelname)s - %(message)s', level=logging.INFO)
 
