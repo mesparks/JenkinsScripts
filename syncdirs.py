@@ -10,29 +10,44 @@ parser = argparse.ArgumentParser(description='S3 Copier')
 parser.add_argument("--srcbucket", help="Source Destination Bucket",default="nw-testsync1", type=str)
 parser.add_argument("--dstbucket", help="Destination S3 Bucket",default="nw-testsync2", type=str)
 parser.add_argument("--dstdir", help="Destination Directory",default="client", type=str)
-parser.add_argument("--nowork", help="Poll Time in Secondsr",default="true", type=str)
+parser.add_argument("--nowork", help="By default, just show command and do not do work",default="true", type=str)
+# parser.add_argument("--dstregion", help="Destination Region",default="us-west-1", type=str)
+# parser.add_argument("--dstregion", help="Destination Region",default="us-west-1", type=str)
 args = parser.parse_args()
 
+extra_args = "--acl public-read-write --exact-timestamps --endpoint-url http://s3-accelerate.amazonaws.com"
 # Setting logging facility
 logging.basicConfig(format='%(asctime)s- %(levelname)s - %(message)s', level=logging.INFO)
 
-
 src_bucket_name = args.srcbucket
 dst_bucket_name = args.dstbucket
+
 dst_directory = args.dstdir
 dirs = []
 root_excludes = ["*.js","*.html","*assets*","*.txt","*.png","*.woff","*.woff2","*.eot","*.ttf","*.css","*.svg"]
 exclude_dirs = ["*genapp*","assets/","dev/"]
 logging.info("Getting directories from bucket")
-logging.info("Excluding file types", root_excludes)
+logging.info("Excluding file types: %s", root_excludes)
+logging.info("Global Excludes: %s", exclude_dirs)
 # Getting directories from root of src bucket
 client = boto3.client('s3')
+# Let's determine bucket regions
+src_bucket_region = client.get_bucket_location(Bucket=src_bucket_name)["LocationConstraint"]
+dst_bucket_region = client.get_bucket_location(Bucket=dst_bucket_name)["LocationConstraint"]
+# If regions are different then append them to the aws command
+if src_bucket_region != dst_bucket_region:
+    logging.info("Buckets are in diferent regions, adding region flags")
+    extra_args = extra_args + " " +  "--region %s --source-region %s" % (dst_bucket_region, src_bucket_region)
+
+
+
+
 result = client.list_objects(Bucket=src_bucket_name, Delimiter='/')
 for o in result.get('CommonPrefixes'):
     dirs.append(o.get('Prefix'))
 
+logging.info("Found Directories: %s", dirs)
 exclude_line = ""
-
 # Build Exclude Dir Line
 for exclude in exclude_dirs:
     exclude_line = exclude_line + " " + "--exclude \"%s*\" " % exclude
@@ -50,7 +65,7 @@ for dir in dirs:
             include_line = include_line + " " + "--include \"%s%s\"" % (dir,include)
 
 
-sync_cmd = ("aws s3 sync s3://%s s3://%s/%s %s %s --exact-timestamps --acl public-read-write" % (src_bucket_name,dst_bucket_name,dst_directory,exclude_line,include_line))
+sync_cmd = ("aws s3 sync s3://%s s3://%s/%s %s %s %s" % (src_bucket_name,dst_bucket_name,dst_directory,exclude_line,include_line, extra_args))
 logging.info ("Running AWS Sync Command: %s" % sync_cmd)
 if args.nowork == "true":
     logging.info("Not doing any work, if you want to do work set --nowork to false")
