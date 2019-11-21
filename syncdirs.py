@@ -15,7 +15,8 @@ parser.add_argument("--nowork", help="By default, just show command and do not d
 # parser.add_argument("--dstregion", help="Destination Region",default="us-west-1", type=str)
 args = parser.parse_args()
 
-extra_args = "--acl public-read-write --exact-timestamps --endpoint-url http://s3-accelerate.amazonaws.com"
+# extra_args = "--acl public-read-write --exact-timestamps --endpoint-url http://s3-accelerate.amazonaws.com"
+extra_args = "--acl public-read-write --exact-timestamps"
 # Setting logging facility
 logging.basicConfig(format='%(asctime)s- %(levelname)s - %(message)s', level=logging.INFO)
 
@@ -85,10 +86,12 @@ while(True):
     logging.debug(line.decode("utf-8"))
     if "error" in line.decode("utf-8"):
         logging.error(line.decode("utf-8"))
-    if "copy" in line.decode("utf-8"):
+    elif "copy" in line.decode("utf-8"):
         filescount = filescount + 1
         if filescount % 500 == 0:
             logging.info("Files copied: %d" % filescount)
+    else:
+        logging.info(line.decode("utf-8"))
     # yield line
     if retcode is not None:
         break
@@ -96,7 +99,10 @@ while(True):
 
 logging.info("Copied %d files . . ." % filescount)
 logging.info ("Ran AWS Sync Command: %s" % sync_cmd)
-logging.info ("Return Code: %d" % retcode)
+if retcode == 0:
+    logging.info ("Return Code: %d" % retcode)
+else:
+    logging.error("Return Code: %d" % retcode)
 sys.exit(retcode)
 
 
