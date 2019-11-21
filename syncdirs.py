@@ -83,6 +83,8 @@ while(True):
     retcode = p.poll() 
     line = p.stdout.readline()
     logging.debug(line.decode("utf-8"))
+    if "error" in line.decode("utf-8"):
+        logging.error(line.decode("utf-8"))
     if "copy" in line.decode("utf-8"):
         filescount = filescount + 1
         if filescount % 500 == 0:
@@ -90,6 +92,8 @@ while(True):
     # yield line
     if retcode is not None:
         break
+
+
 logging.info("Copied %d files . . ." % filescount)
 logging.info ("Ran AWS Sync Command: %s" % sync_cmd)
 logging.info ("Return Code: %d" % retcode)
