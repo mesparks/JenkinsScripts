@@ -18,7 +18,7 @@ parser.add_argument("--acl", help="ACL to use",default="bucket-owner-full-contro
 args = parser.parse_args()
 
 # extra_args = "--acl public-read-write --exact-timestamps --endpoint-url http://s3-accelerate.amazonaws.com"
-extra_args = "--acl  %s --exact-timestamps" % args.acl
+extra_args = "--acl  %s --exact-timestamps  --exclude 'dev/*' --exclude '*/genapp/*'" % args.acl
 # Setting logging facility
 logging.basicConfig(format='%(asctime)s- %(levelname)s - %(message)s', level=logging.INFO)
 
@@ -67,7 +67,7 @@ def getdirs(bucket_name):
 
 
 def sync_subdir(subdir):
-    sync_cmd = ("aws s3 sync s3://%s/%s s3://%s/%s/%s  %s" % (src_bucket_name, subdir,dst_bucket_name,dst_directory, subdir, extra_args))
+    sync_cmd = ("aws s3 sync s3://%s/%s s3://%s/%s/%s %s " % (src_bucket_name, subdir,dst_bucket_name,dst_directory, subdir, extra_args))
     logging.info ("Running AWS Sync Command: %s" % sync_cmd)
     if args.nowork == "true":
         logging.info("Not doing any work, if you want to do work set --nowork to false")
@@ -81,7 +81,7 @@ def sync_subdir(subdir):
         retcode = p.poll() 
         line = p.stdout.readline()
         logging.debug(line.decode("utf-8"))
-        if "error" in line.decode("utf-8"):
+        if " error " in line.decode("utf-8"):
             logging.error(line.decode("utf-8"))
         elif "copy" in line.decode("utf-8"):
             filescount = filescount + 1
