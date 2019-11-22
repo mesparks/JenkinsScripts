@@ -27,10 +27,10 @@ dst_bucket_name = args.dstbucket
 
 dst_directory = args.dstdir
 # dirs = []
-root_excludes = ["*.js","*.html","*assets*","*.txt","*.png","*.woff","*.woff2","*.eot","*.ttf","*.css","*.svg"]
+# root_excludes = ["*.js","*.html","*assets*","*.txt","*.png","*.woff","*.woff2","*.eot","*.ttf","*.css","*.svg"]
 exclude_dirs = ["*genapp*","assets/","dev/"]
 logging.info("Getting directories from bucket")
-logging.info("Excluding file types: %s", root_excludes)
+# logging.info("Excluding file types: %s", root_excludes)
 logging.info("Global Excludes: %s", exclude_dirs)
 # Getting directories from root of src bucket
 client = boto3.client('s3')
