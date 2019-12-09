@@ -4,7 +4,11 @@ import subprocess
 import sys
 import argparse
 import logging
+import os
 
+
+ACCESS_KEY = os.environ['aws_key']
+SECRET_KEY = os.environ['aws_secret']
 
 parser = argparse.ArgumentParser(description='S3 Copier')
 parser.add_argument("--srcbucket", help="Source Destination Bucket",default="nw-testsync1", type=str)
@@ -18,7 +22,7 @@ parser.add_argument("--acl", help="ACL to use",default="bucket-owner-full-contro
 args = parser.parse_args()
 
 # extra_args = "--acl public-read-write --exact-timestamps --endpoint-url http://s3-accelerate.amazonaws.com"
-extra_args = "--acl  %s --exact-timestamps  --exclude 'dev/*' --exclude '*/genapp/*'" % args.acl
+extra_args = "--acl  %s --exact-timestamps  --exclude 'dev/*' --exclude 'genapp/*'" % args.acl
 # Setting logging facility
 logging.basicConfig(format='%(asctime)s- %(levelname)s - %(message)s', level=logging.INFO)
 
@@ -27,16 +31,27 @@ dst_bucket_name = args.dstbucket
 
 dst_directory = args.dstdir
 # dirs = []
-# root_excludes = ["*.js","*.html","*assets*","*.txt","*.png","*.woff","*.woff2","*.eot","*.ttf","*.css","*.svg"]
+root_excludes = ["*.js","*.html","*assets*","*.txt","*.png","*.woff","*.woff2","*.eot","*.ttf","*.css","*.svg"]
 exclude_dirs = ["*genapp*","assets/","dev/"]
 logging.info("Getting directories from bucket")
-# logging.info("Excluding file types: %s", root_excludes)
+logging.info("Excluding file types: %s", root_excludes)
 logging.info("Global Excludes: %s", exclude_dirs)
+
 # Getting directories from root of src bucket
-client = boto3.client('s3')
+client = boto3.client(
+	's3',
+	aws_access_key_id=ACCESS_KEY,
+	aws_secret_access_key=SECRET_KEY
+)
+
 # Let's determine bucket regions
-src_bucket_region = client.get_bucket_location(Bucket=src_bucket_name)["LocationConstraint"]
-dst_bucket_region = client.get_bucket_location(Bucket=dst_bucket_name)["LocationConstraint"]
+#src_bucket_region = client.get_bucket_location(Bucket=src_bucket_name)["LocationConstraint"]
+#dst_bucket_region = client.get_bucket_location(Bucket=dst_bucket_name)["LocationConstraint"]
+
+
+src_bucket_region = 'us-west-1'
+dst_bucket_region = 'us-west-2'
+
 # If regions are different then append them to the aws command
 if src_bucket_region != dst_bucket_region:
     logging.info("Buckets are in diferent regions, adding region flags")
